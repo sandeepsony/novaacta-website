@@ -1,6 +1,6 @@
-# NovaActa website
+# AetherActa website
 
-Marketing site for NovaActa: engineering intelligence for industrial data.
+Marketing site for AetherActa: engineering intelligence for industrial data.
 
 Built with Vite, React, TypeScript and Tailwind CSS. Every route is prerendered to
 static HTML at build time, so the output in `dist/` can be served by any static host.

@@ -643,7 +643,7 @@ const PlatformSection = () => {
               <div className="w-2.5 h-2.5 rounded-full bg-accent/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" />
               <span className="ml-3 truncate font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                NovaActa workspace<span className="hidden sm:inline"> · concept preview</span>
+                AetherActa workspace<span className="hidden sm:inline"> · concept preview</span>
               </span>
               <div className="ml-auto flex items-center gap-2">
                 <span className="whitespace-nowrap border border-accent/50 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Simulated data</span>

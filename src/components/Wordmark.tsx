@@ -4,22 +4,19 @@ interface WordmarkProps {
 }
 
 const sizes = {
-  sm: "text-sm tracking-[0.32em]",
-  md: "text-base tracking-[0.3em]",
-  lg: "text-xl tracking-[0.25em]",
+  sm: "text-[1.5rem]",
+  md: "text-[1.625rem]",
+  lg: "text-[2rem]",
 };
 
-const dividerSizes = {
-  sm: "h-3.5 mx-2.5",
-  md: "h-4 mx-2.5",
-  lg: "h-5 mx-3",
-};
-
-/** The NOVA | ACTA lockup, set in live text so it stays sharp at any size. */
+/**
+ * The AetherActa wordmark: one word, with the capital of each root keeping
+ * the two halves readable and "Acta" in the accent. Set in live text in the
+ * heading serif so it stays sharp at any size.
+ */
 const Wordmark = ({ size = "md", className = "" }: WordmarkProps) => (
-  <span className={`inline-flex select-none items-center font-body font-light uppercase ${sizes[size]} ${className}`}>
-    <span className="text-foreground">Nova</span>
-    <span aria-hidden="true" className={`w-px bg-accent/70 ${dividerSizes[size]}`} />
+  <span className={`inline-block select-none font-heading font-semibold leading-none tracking-[0.005em] ${sizes[size]} ${className}`}>
+    <span className="text-foreground">Aether</span>
     <span className="text-accent">Acta</span>
   </span>
 );

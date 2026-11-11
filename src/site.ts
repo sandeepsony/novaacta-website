@@ -5,13 +5,13 @@
  */
 
 export const site = {
-  name: "NovaActa",
+  name: "AetherActa",
   /** Production origin, no trailing slash. Change this if the domain differs. */
-  url: "https://novaacta.com",
-  email: "hello@novaacta.com",
+  url: "https://aetheracta.com",
+  email: "hello@aetheracta.com",
   tagline: "Engineering intelligence",
   description:
-    "NovaActa pairs research-level engineering expertise with data science to find the root cause of failures, losses and risks hiding in industrial data.",
+    "AetherActa pairs research-level engineering expertise with data science to find the root cause of failures, losses and risks hiding in industrial data.",
   ogImage: "/og-image.png",
 } as const;
 
@@ -29,29 +29,29 @@ export const pages: PageMeta[] = [
   {
     path: "/",
     label: "Home",
-    title: "NovaActa | Engineering intelligence for industrial data",
+    title: "AetherActa | Engineering intelligence for industrial data",
     description: site.description,
   },
   {
     path: "/what-we-do",
     label: "What we do",
-    title: "What we do | Engineering, data and applied AI | NovaActa",
+    title: "What we do | Engineering, data and applied AI | AetherActa",
     description:
       "Failure and root cause analysis, first-principles simulation, industrial data pipelines and applied AI, delivered by engineers who understand the physics.",
   },
   {
     path: "/platform",
     label: "Platform",
-    title: "Platform preview | Investigation workspace | NovaActa",
+    title: "Platform preview | Investigation workspace | AetherActa",
     description:
-      "A concept preview of the NovaActa investigation workspace: sensor signals, risk trends and findings for one asset in a single view. Shown with simulated data.",
+      "A concept preview of the AetherActa investigation workspace: sensor signals, risk trends and findings for one asset in a single view. Shown with simulated data.",
   },
   {
     path: "/scenarios",
     label: "Scenarios",
-    title: "Scenarios | Engineering problems we are built for | NovaActa",
+    title: "Scenarios | Engineering problems we are built for | AetherActa",
     description:
-      "Seven illustrative scenarios, from offshore corrosion to wind farm wake losses, showing how NovaActa would investigate a problem that standard monitoring misses.",
+      "Seven illustrative scenarios, from offshore corrosion to wind farm wake losses, showing how AetherActa would investigate a problem that standard monitoring misses.",
   },
 ];
 
@@ -63,7 +63,7 @@ export const redirects: Record<string, string> = {
 export const notFoundMeta: PageMeta = {
   path: "/404",
   label: "Not found",
-  title: "Page not found | NovaActa",
+  title: "Page not found | AetherActa",
   description: "The page you were looking for does not exist.",
   noindex: true,
 };

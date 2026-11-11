@@ -37,7 +37,7 @@ const HeroSection = () => (
         </h1>
 
         <p className="rise mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-muted-foreground" style={{ animationDelay: "80ms" }}>
-          NovaActa pairs research-level engineering expertise with data science to find the
+          AetherActa pairs research-level engineering expertise with data science to find the
           degradation, loss and risk hiding in the operational data you already collect, and
           to explain the physics behind it.
         </p>

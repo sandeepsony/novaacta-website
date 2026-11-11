@@ -47,7 +47,7 @@ const StealthOverlay = () => {
     }
 
     if (accessCode !== ACCESS_CODE) {
-      setError("Invalid access code. Contact NovaActa for authorization.");
+      setError("Invalid access code. Contact AetherActa for authorization.");
       return;
     }
 

@@ -25,7 +25,7 @@ const AboutSection = () => (
     <div className="site-container grid gap-14 md:grid-cols-2 md:gap-20">
       <Reveal>
         <SectionHeading
-          eyebrow="Why NovaActa"
+          eyebrow="Why AetherActa"
           id="about-heading"
           title={
             <>
@@ -39,7 +39,7 @@ const AboutSection = () => (
           only makes sense once you understand the physics producing it.
         </p>
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-          NovaActa is built to work in that gap.
+          AetherActa is built to work in that gap.
         </p>
       </Reveal>
 
