@@ -2,6 +2,7 @@ import { useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { scenarios } from "@/content/scenarios";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, ScatterChart, Scatter,
   XAxis, YAxis, ResponsiveContainer, Tooltip, RadarChart, Radar, PolarGrid,
@@ -18,16 +19,16 @@ interface SensorData {
   chartType: ChartType;
 }
 
-interface CaseStudy {
+interface Workspace {
   id: string;
   shortTitle: string;
   title: string;
   headline: string;
   color: string;
   colorSecondary: string;
-  stats: { value: string; label: string }[];
+  /** What an analyst would be watching in this view. */
+  watch: string[];
   disciplines: string[];
-  status: string;
   riskBefore: number;
   riskAfter: number;
   sensors: SensorData[];
@@ -35,7 +36,10 @@ interface CaseStudy {
   heroChart: "radar" | "waterfall" | "radialBar" | "distribution" | "heatmap" | "comparison" | "gauge";
 }
 
-/* ── Helpers ──────────────────────────────────────── */
+/* ── Simulated data ───────────────────────────────── */
+// Everything on this page is generated from a fixed seed. Nothing here is
+// measured data, and the UI says so. Seeding keeps the charts identical between
+// the prerendered HTML and the browser.
 
 const seededRandom = (seed: number) => {
   let s = seed;
@@ -71,20 +75,13 @@ const generateTimeline = (seed: number, riskStart: number, riskEnd: number) => {
   });
 };
 
-/* ── Case data ────────────────────────────────────── */
+type WorkspaceView = Omit<Workspace, "id" | "shortTitle" | "title" | "headline" | "disciplines">;
 
-const caseStudies: CaseStudy[] = [
-  {
-    id: "offshore", shortTitle: "Offshore", title: "Offshore Platform",
-    headline: "$400M platform losing 6% output",
+const views: Record<string, WorkspaceView> = {
+  offshore: {
     color: "hsl(35, 100%, 50%)", colorSecondary: "hsl(25, 90%, 40%)",
-    stats: [
-      { value: "$38M", label: "Failure cost prevented" },
-      { value: "6.2%", label: "Output recovered" },
-      { value: "26mo", label: "Early warning" },
-    ],
-    disciplines: ["Structural Integrity", "Corrosion Engineering", "Subsea Systems"],
-    status: "RESOLVED", riskBefore: 0.87, riskAfter: 0.12,
+    watch: ["Wall loss at jacket joints", "Heat exchanger fouling rate", "Riser fatigue margin"],
+    riskBefore: 0.87, riskAfter: 0.12,
     sensors: [
       { name: "Vibration (mm/s)", data: generateSensorData(1, 4.2, 2.5, 16), chartType: "area" },
       { name: "Corrosion Rate (mpy)", data: generateSensorData(2, 12, 8, 18), chartType: "bar" },
@@ -93,20 +90,13 @@ const caseStudies: CaseStudy[] = [
       { name: "Temperature (°C)", data: generateSensorData(5, 72, 18, 17), chartType: "scatter" },
       { name: "Fatigue Cycles (k)", data: generateSensorData(6, 1200, 300), chartType: "gauge" },
     ],
-    timelineLabel: "Structural Risk Index",
+    timelineLabel: "Structural risk index",
     heroChart: "radar",
   },
-  {
-    id: "bridge", shortTitle: "Bridge", title: "Bridge Deflection",
-    headline: "12mm overnight deflection explained",
+  bridge: {
     color: "hsl(200, 80%, 55%)", colorSecondary: "hsl(210, 70%, 40%)",
-    stats: [
-      { value: "$12M", label: "Saved vs replacement" },
-      { value: "12mm", label: "Deflection explained" },
-      { value: "15yr", label: "Hidden fatigue found" },
-    ],
-    disciplines: ["Structural Engineering", "Materials Science", "Thermal Analysis"],
-    status: "RESOLVED", riskBefore: 0.72, riskAfter: 0.08,
+    watch: ["Thermal gradient across girders", "Deflection against the model", "Connection stiffness"],
+    riskBefore: 0.72, riskAfter: 0.08,
     sensors: [
       { name: "Deflection (mm)", data: generateSensorData(10, 8, 5, 12), chartType: "area" },
       { name: "Temperature (°C)", data: generateSensorData(11, 15, 22), chartType: "line" },
@@ -115,20 +105,13 @@ const caseStudies: CaseStudy[] = [
       { name: "Wind Speed (m/s)", data: generateSensorData(14, 12, 15), chartType: "scatter" },
       { name: "Tilt Angle (°)", data: generateSensorData(15, 0.3, 0.2, 13), chartType: "gauge" },
     ],
-    timelineLabel: "Fatigue Risk Score",
+    timelineLabel: "Fatigue risk score",
     heroChart: "waterfall",
   },
-  {
-    id: "windfarm", shortTitle: "Wind Farm", title: "Wind Farm Capacity",
-    headline: "11% capacity loss — zero alarms",
+  windfarm: {
     color: "hsl(145, 65%, 45%)", colorSecondary: "hsl(155, 55%, 35%)",
-    stats: [
-      { value: "11%", label: "Capacity recovered" },
-      { value: "$4.7M", label: "Annual value" },
-      { value: "47", label: "Turbines optimized" },
-    ],
-    disciplines: ["Aerodynamics", "Applied Mathematics", "Fleet Analytics"],
-    status: "MONITORING", riskBefore: 0.58, riskAfter: 0.04,
+    watch: ["Fleet-wide yaw error", "Wake losses by row", "Output against the wind resource"],
+    riskBefore: 0.58, riskAfter: 0.04,
     sensors: [
       { name: "Power Output (kW)", data: generateSensorData(20, 2800, 600), chartType: "area" },
       { name: "Wind Speed (m/s)", data: generateSensorData(21, 11, 6), chartType: "line" },
@@ -137,20 +120,13 @@ const caseStudies: CaseStudy[] = [
       { name: "Yaw Error (°)", data: generateSensorData(24, 3, 4, 10), chartType: "scatter" },
       { name: "Vibration (mm/s)", data: generateSensorData(25, 2.1, 1.5), chartType: "gauge" },
     ],
-    timelineLabel: "Efficiency Loss Index",
+    timelineLabel: "Efficiency loss index",
     heroChart: "radialBar",
   },
-  {
-    id: "gears", shortTitle: "Gears", title: "Marine Drive Failure",
-    headline: "Catastrophic gear failure predicted",
+  gears: {
     color: "hsl(0, 70%, 55%)", colorSecondary: "hsl(10, 60%, 40%)",
-    stats: [
-      { value: "$2.3M", label: "Damage prevented" },
-      { value: "12", label: "Vessels protected" },
-      { value: "0", label: "Failures since" },
-    ],
-    disciplines: ["Mechanical Engineering", "Tribology", "Vibration Analysis"],
-    status: "RESOLVED", riskBefore: 0.93, riskAfter: 0.05,
+    watch: ["Gear mesh harmonics", "Lubricant particle count", "Bearing clearance drift"],
+    riskBefore: 0.93, riskAfter: 0.05,
     sensors: [
       { name: "Vibration (g)", data: generateSensorData(30, 2.8, 3.5, 19), chartType: "scatter" },
       { name: "Oil Temp (°C)", data: generateSensorData(31, 68, 20, 20), chartType: "area" },
@@ -159,20 +135,13 @@ const caseStudies: CaseStudy[] = [
       { name: "RPM", data: generateSensorData(34, 1450, 80), chartType: "step" },
       { name: "Bearing Temp (°C)", data: generateSensorData(35, 55, 15, 19), chartType: "gauge" },
     ],
-    timelineLabel: "Gear Failure Probability",
+    timelineLabel: "Gear failure probability",
     heroChart: "distribution",
   },
-  {
-    id: "refinery", shortTitle: "Refinery", title: "Refinery Energy Loss",
-    headline: "$2M/year energy bleed found",
+  refinery: {
     color: "hsl(280, 60%, 55%)", colorSecondary: "hsl(270, 50%, 40%)",
-    stats: [
-      { value: "$2.1M", label: "Annual savings" },
-      { value: "0", label: "Capital required" },
-      { value: "2.1MW", label: "Energy recovered" },
-    ],
-    disciplines: ["Process Engineering", "Thermodynamics", "Control Systems"],
-    status: "RESOLVED", riskBefore: 0.45, riskAfter: 0.03,
+    watch: ["Energy use against design basis", "Exchanger fouling rate", "Control loop calibration"],
+    riskBefore: 0.45, riskAfter: 0.03,
     sensors: [
       { name: "Steam Flow (t/h)", data: generateSensorData(40, 120, 30), chartType: "area" },
       { name: "Heat Loss (kW)", data: generateSensorData(41, 850, 200, 14), chartType: "bar" },
@@ -181,20 +150,13 @@ const caseStudies: CaseStudy[] = [
       { name: "Exhaust Temp (°C)", data: generateSensorData(44, 310, 45, 16), chartType: "line" },
       { name: "Flow Rate (m³/h)", data: generateSensorData(45, 2400, 300), chartType: "scatter" },
     ],
-    timelineLabel: "Energy Loss Index",
+    timelineLabel: "Energy loss index",
     heroChart: "heatmap",
   },
-  {
-    id: "pipeline", shortTitle: "Pipeline", title: "Pipeline Integrity",
-    headline: "0.5mm defect under a river",
+  pipeline: {
     color: "hsl(40, 95%, 50%)", colorSecondary: "hsl(45, 85%, 40%)",
-    stats: [
-      { value: "$50M+", label: "Disaster averted" },
-      { value: "0.5mm", label: "Defect detected" },
-      { value: "12m", label: "Precision located" },
-    ],
-    disciplines: ["Pipeline Engineering", "Digital Twin", "Risk Assessment"],
-    status: "RESOLVED", riskBefore: 0.96, riskAfter: 0.02,
+    watch: ["Wall thickness trend", "Pressure transients", "Cathodic protection level"],
+    riskBefore: 0.96, riskAfter: 0.02,
     sensors: [
       { name: "Wall Thickness (mm)", data: generateSensorData(50, 8.2, 2.5, 20), chartType: "bar" },
       { name: "Pressure (bar)", data: generateSensorData(51, 65, 12), chartType: "area" },
@@ -203,20 +165,13 @@ const caseStudies: CaseStudy[] = [
       { name: "Ground Movement (mm)", data: generateSensorData(54, 0.8, 1.5, 19), chartType: "step" },
       { name: "Cathodic Prot. (mV)", data: generateSensorData(55, -850, 120), chartType: "gauge" },
     ],
-    timelineLabel: "Integrity Threat Level",
+    timelineLabel: "Integrity threat level",
     heroChart: "comparison",
   },
-  {
-    id: "wastewater", shortTitle: "Wastewater", title: "Wastewater Treatment",
-    headline: "Compliance achieved in 8 weeks",
+  wastewater: {
     color: "hsl(180, 60%, 45%)", colorSecondary: "hsl(190, 50%, 35%)",
-    stats: [
-      { value: "$15M", label: "Fines avoided" },
-      { value: "8wk", label: "To compliance" },
-      { value: "$340K", label: "Fix cost" },
-    ],
-    disciplines: ["Environmental Eng.", "Biochemistry", "Process Control"],
-    status: "RESOLVED", riskBefore: 0.68, riskAfter: 0.06,
+    watch: ["Effluent ammonia and phosphorus", "Clarifier retention time", "Dosing pH"],
+    riskBefore: 0.68, riskAfter: 0.06,
     sensors: [
       { name: "BOD (mg/L)", data: generateSensorData(60, 45, 25, 6), chartType: "bar" },
       { name: "pH Level", data: generateSensorData(61, 7.2, 1.5), chartType: "step" },
@@ -225,10 +180,20 @@ const caseStudies: CaseStudy[] = [
       { name: "Flow (ML/d)", data: generateSensorData(64, 12, 4), chartType: "scatter" },
       { name: "Ammonia (mg/L)", data: generateSensorData(65, 8, 6, 5), chartType: "gauge" },
     ],
-    timelineLabel: "Compliance Risk",
+    timelineLabel: "Compliance risk",
     heroChart: "gauge",
   },
-];
+};
+
+// Titles and disciplines come from the scenarios content so the two pages agree.
+const workspaces: Workspace[] = scenarios.map((scenario) => ({
+  id: scenario.id,
+  shortTitle: scenario.shortTitle,
+  title: scenario.title,
+  headline: scenario.headline,
+  disciplines: scenario.disciplines.slice(0, 3),
+  ...views[scenario.id],
+}));
 
 /* ── Mini chart renderers (sparkline size) ────────── */
 
@@ -265,6 +230,8 @@ const MiniBar = ({ data, color }: { data: { i: number; v: number }[]; color: str
 const MiniScatter = ({ data, color }: { data: { i: number; v: number }[]; color: string }) => (
   <ResponsiveContainer width="100%" height="100%">
     <ScatterChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+      <XAxis type="number" dataKey="i" hide domain={["dataMin", "dataMax"]} />
+      <YAxis type="number" dataKey="v" hide domain={["dataMin", "dataMax"]} />
       <Scatter data={data} fill={color} opacity={0.7}>
         {data.map((_, idx) => (
           <Cell key={idx} fill={color} />
@@ -310,18 +277,19 @@ const renderMiniChart = (chartType: ChartType, data: { i: number; v: number }[],
 
 /* ── Hero chart renderers ─────────────────────────── */
 
-const HeroRadar = ({ cs }: { cs: CaseStudy }) => {
+const HeroRadar = ({ cs }: { cs: Workspace }) => {
+  const rng = seededRandom(7);
   const radarData = cs.sensors.map(s => {
     const max = Math.max(...s.data);
     const min = Math.min(...s.data);
     const current = s.data[s.data.length - 1];
-    return { subject: s.name.split(" (")[0], before: 80 + Math.random() * 20, after: ((current - min) / (max - min || 1)) * 100 };
+    return { subject: s.name.split(" (")[0], before: 80 + rng() * 20, after: ((current - min) / (max - min || 1)) * 100 };
   });
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={radarData} cx="50%" cy="50%">
         <PolarGrid stroke="hsl(var(--border))" />
-        <PolarAngleAxis dataKey="subject" tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} />
+        <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
         <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
         <Radar name="Before" dataKey="before" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} strokeWidth={1} strokeDasharray="4 4" />
         <Radar name="After" dataKey="after" stroke={cs.color} fill={cs.color} fillOpacity={0.25} strokeWidth={1.5} />
@@ -330,7 +298,7 @@ const HeroRadar = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const HeroWaterfall = ({ cs }: { cs: CaseStudy }) => {
+const HeroWaterfall = ({ cs }: { cs: Workspace }) => {
   const stages = ["Detection", "Analysis", "Root Cause", "Solution", "Validation", "Resolution"];
   const rng = seededRandom(42);
   let running = cs.riskBefore * 100;
@@ -342,8 +310,8 @@ const HeroWaterfall = ({ cs }: { cs: CaseStudy }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-        <XAxis dataKey="name" tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, 100]} width={25} />
+        <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, 100]} width={25} />
         <Bar dataKey="value" radius={[2, 2, 0, 0]}>
           {data.map((entry, idx) => (
             <Cell key={idx} fill={entry.fill} opacity={0.7} />
@@ -354,7 +322,7 @@ const HeroWaterfall = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const HeroRadialBar = ({ cs }: { cs: CaseStudy }) => {
+const HeroRadialBar = ({ cs }: { cs: Workspace }) => {
   const metrics = cs.sensors.slice(0, 4).map((s, i) => {
     const max = Math.max(...s.data);
     const min = Math.min(...s.data);
@@ -366,13 +334,13 @@ const HeroRadialBar = ({ cs }: { cs: CaseStudy }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={metrics} startAngle={90} endAngle={-270} barSize={10}>
-        <RadialBar dataKey="value" cornerRadius={4} background={{ fill: "hsl(var(--secondary))" }} label={{ position: "insideStart", fontSize: 7, fill: "hsl(var(--foreground))" }} />
+        <RadialBar dataKey="value" cornerRadius={4} background={{ fill: "hsl(var(--secondary))" }} label={{ position: "insideStart", fontSize: 10, fill: "hsl(var(--foreground))" }} />
       </RadialBarChart>
     </ResponsiveContainer>
   );
 };
 
-const HeroDistribution = ({ cs }: { cs: CaseStudy }) => {
+const HeroDistribution = ({ cs }: { cs: Workspace }) => {
   const mainSensor = cs.sensors[0];
   const bins = Array.from({ length: 12 }, (_, i) => {
     const min = Math.min(...mainSensor.data);
@@ -385,8 +353,8 @@ const HeroDistribution = ({ cs }: { cs: CaseStudy }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={bins} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-        <XAxis dataKey="bin" tick={{ fontSize: 6, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} interval={1} />
-        <YAxis tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
+        <XAxis dataKey="bin" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} interval={1} />
+        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
         <Bar dataKey="count" radius={[2, 2, 0, 0]}>
           {bins.map((entry, idx) => (
             <Cell key={idx} fill={entry.fill} opacity={0.65} />
@@ -397,7 +365,7 @@ const HeroDistribution = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const HeroHeatmap = ({ cs }: { cs: CaseStudy }) => {
+const HeroHeatmap = ({ cs }: { cs: Workspace }) => {
   // Render as stacked multi-line for different sensors
   const chartData = cs.sensors[0].data.map((_, i) => {
     const point: Record<string, number> = { i };
@@ -422,7 +390,7 @@ const HeroHeatmap = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const HeroComparison = ({ cs }: { cs: CaseStudy }) => {
+const HeroComparison = ({ cs }: { cs: Workspace }) => {
   const data = cs.sensors.map(s => {
     const before = s.data.slice(0, 8);
     const after = s.data.slice(-8);
@@ -435,8 +403,8 @@ const HeroComparison = ({ cs }: { cs: CaseStudy }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} layout="vertical" margin={{ top: 5, right: 10, bottom: 5, left: 60 }}>
-        <XAxis type="number" tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-        <YAxis type="category" dataKey="name" tick={{ fontSize: 7, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={58} />
+        <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={58} />
         <Bar dataKey="before" fill="hsl(var(--destructive))" opacity={0.4} radius={[0, 2, 2, 0]} barSize={6} />
         <Bar dataKey="after" fill={cs.color} opacity={0.7} radius={[0, 2, 2, 0]} barSize={6} />
       </BarChart>
@@ -444,7 +412,7 @@ const HeroComparison = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const HeroGauge = ({ cs }: { cs: CaseStudy }) => {
+const HeroGauge = ({ cs }: { cs: Workspace }) => {
   const gaugeData = cs.sensors.slice(0, 5).map((s, i) => {
     const current = s.data[s.data.length - 1];
     const max = Math.max(...s.data);
@@ -461,17 +429,17 @@ const HeroGauge = ({ cs }: { cs: CaseStudy }) => {
   );
 };
 
-const heroChartLabels: Record<CaseStudy["heroChart"], string> = {
-  radar: "Multi-Axis Risk Radar",
-  waterfall: "Risk Reduction Cascade",
-  radialBar: "Performance Metrics",
-  distribution: "Anomaly Distribution",
-  heatmap: "Multi-Sensor Correlation",
-  comparison: "Before vs After Analysis",
-  gauge: "System Health Gauges",
+const heroChartLabels: Record<Workspace["heroChart"], string> = {
+  radar: "Multi-axis risk radar",
+  waterfall: "Risk reduction by stage",
+  radialBar: "Performance metrics",
+  distribution: "Anomaly distribution",
+  heatmap: "Multi-sensor correlation",
+  comparison: "Before and after",
+  gauge: "System health gauges",
 };
 
-const renderHeroChart = (cs: CaseStudy) => {
+const renderHeroChart = (cs: Workspace) => {
   switch (cs.heroChart) {
     case "radar": return <HeroRadar cs={cs} />;
     case "waterfall": return <HeroWaterfall cs={cs} />;
@@ -502,15 +470,16 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
 
   return (
     <>
-      <div
+      <button
+        type="button"
         onClick={() => setExpanded(true)}
-        className="bg-secondary/30 border border-border/50 rounded-sm p-3 hover:border-border transition-colors group cursor-pointer"
+        className="w-full bg-secondary/30 border border-border/50 rounded-sm p-3 text-left hover:border-accent/50 transition-colors group"
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="font-mono-data text-[11px] uppercase tracking-[0.12em] text-muted-foreground truncate mr-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground truncate mr-2">
             {sensor.name}
           </span>
-          <span className={`font-mono-data text-[10px] font-semibold ${isSpike ? "text-destructive" : "text-foreground"}`}>
+          <span className={`font-mono text-[11px] font-semibold ${isSpike ? "text-destructive" : "text-foreground"}`}>
             {current}
           </span>
         </div>
@@ -518,14 +487,15 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
           {renderMiniChart(sensor.chartType, chartData, color)}
         </div>
         <div className="flex items-center justify-between mt-1.5">
-          <span className="font-mono-data text-[10px] text-muted-foreground">
+          <span className="font-mono text-[11px] text-muted-foreground">
             {min.toFixed(1)} — {max.toFixed(1)}
           </span>
-          <span className={`font-mono-data text-[10px] ${delta > 0 ? "text-destructive" : "text-accent"}`}>
+          <span className={`font-mono text-[11px] ${delta > 0 ? "text-destructive" : "text-accent"}`}>
             {delta > 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}
           </span>
         </div>
-      </div>
+        <span className="sr-only">Open larger chart</span>
+      </button>
 
       {/* Expanded overlay */}
       <AnimatePresence>
@@ -535,7 +505,10 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label={sensor.name}
             onClick={() => setExpanded(false)}
           >
             <motion.div
@@ -547,12 +520,14 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
                   {sensor.name}
                 </span>
                 <button
+                  type="button"
+                  autoFocus
                   onClick={() => setExpanded(false)}
-                  className="font-mono-data text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  className="font-mono text-[11px] text-muted-foreground hover:text-foreground transition-colors"
                 >
                   ✕ CLOSE
                 </button>
@@ -567,14 +542,14 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
                         <stop offset="100%" stopColor={color} stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="i" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[Math.floor(min * 0.9), Math.ceil(max * 1.1)]} width={40} />
+                    <XAxis dataKey="i" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[Math.floor(min * 0.9), Math.ceil(max * 1.1)]} width={40} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "2px",
-                        fontSize: "10px",
+                        fontSize: "12px",
                         fontFamily: "monospace",
                       }}
                       formatter={(value: number) => [value.toFixed(2), sensor.name]}
@@ -593,7 +568,7 @@ const SparklineCard = ({ sensor, color }: { sensor: SensorData; color: string })
                 ].map((s) => (
                   <div key={s.label} className="bg-secondary/30 border border-border/50 rounded-sm p-3 text-center">
                     <div className="font-heading text-base text-foreground">{s.value}</div>
-                    <div className="font-mono-data text-[10px] uppercase tracking-[0.15em] text-muted-foreground mt-1">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground mt-1">
                       {s.label}
                     </div>
                   </div>
@@ -613,8 +588,8 @@ const RiskBar = ({ before, after, color }: { before: number; after: number; colo
   <div className="flex items-center gap-3">
     <div className="flex-1">
       <div className="flex items-center justify-between mb-1">
-        <span className="font-mono-data text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Risk Before</span>
-        <span className="font-mono-data text-[10px] text-destructive">{(before * 100).toFixed(0)}%</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">Before</span>
+        <span className="font-mono text-[11px] text-destructive">{(before * 100).toFixed(0)}%</span>
       </div>
       <div className="h-1 bg-secondary rounded-full overflow-hidden">
         <motion.div
@@ -625,11 +600,11 @@ const RiskBar = ({ before, after, color }: { before: number; after: number; colo
         />
       </div>
     </div>
-    <div className="font-mono-data text-[11px] text-muted-foreground">→</div>
+    <div className="font-mono text-[11px] text-muted-foreground">→</div>
     <div className="flex-1">
       <div className="flex items-center justify-between mb-1">
-        <span className="font-mono-data text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Risk After</span>
-        <span className="font-mono-data text-[10px]" style={{ color }}>{(after * 100).toFixed(0)}%</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">After</span>
+        <span className="font-mono text-[11px] text-foreground">{(after * 100).toFixed(0)}%</span>
       </div>
       <div className="h-1 bg-secondary rounded-full overflow-hidden">
         <motion.div
@@ -650,45 +625,46 @@ const PlatformSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  const activeCase = caseStudies[activeIndex];
+  const activeCase = workspaces[activeIndex];
 
   const timelineData = useMemo(
-    () => generateTimeline(activeIndex, activeCase.riskBefore, activeCase.riskAfter),
+    () => generateTimeline(activeIndex, activeCase.riskBefore * 100, activeCase.riskAfter * 100),
     [activeIndex, activeCase.riskBefore, activeCase.riskAfter]
   );
 
   return (
-    <section ref={ref} className="py-16 md:py-24 overflow-hidden">
-      <div className="cinematic-container">
-        <div className="max-w-7xl mx-auto">
+    <section ref={ref} className="py-14 md:py-20 overflow-hidden" aria-label="Workspace preview">
+      <div className="site-container">
+        <div className="relative max-w-7xl mx-auto">
           <div className="relative bg-card border border-border rounded-sm overflow-hidden shadow-2xl shadow-background/50">
             {/* Window chrome */}
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-secondary/50">
               <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-accent/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" />
-              <span className="ml-3 font-mono-data text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                NovaActa Platform — Case Monitor
+              <span className="ml-3 truncate font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                NovaActa workspace<span className="hidden sm:inline"> · concept preview</span>
               </span>
               <div className="ml-auto flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                <span className="font-mono-data text-[11px] text-muted-foreground">7 CASES TRACKED</span>
+                <span className="whitespace-nowrap border border-accent/50 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Simulated data</span>
               </div>
             </div>
 
             {/* Case tabs */}
             <div className="flex border-b border-border bg-secondary/30 overflow-x-auto">
-              {caseStudies.map((cs, i) => (
+              {workspaces.map((cs, i) => (
                 <button
                   key={cs.id}
+                  type="button"
+                  aria-pressed={i === activeIndex}
                   onClick={() => setActiveIndex(i)}
-                  className={`relative px-4 py-2.5 font-mono-data text-[10px] uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
+                  className={`relative px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
                     i === activeIndex
                       ? "text-foreground bg-card"
                       : "text-muted-foreground hover:text-foreground/70"
                   }`}
                 >
-                  <span className="mr-2 text-[11px]" style={{ color: i === activeIndex ? cs.color : undefined }}>
+                  <span className={`mr-2 text-[11px] ${i === activeIndex ? "text-accent" : ""}`}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   {cs.shortTitle}
@@ -715,25 +691,21 @@ const PlatformSection = () => {
                 {/* Case header */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-secondary/20">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activeCase.color }} />
-                  <span className="font-mono-data text-[10px] uppercase tracking-[0.2em]" style={{ color: activeCase.color }}>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">
                     {activeCase.title}
                   </span>
-                  <span className="font-heading text-sm md:text-base text-foreground ml-2">
+                  <span className="hidden font-heading text-lg text-foreground ml-2 md:inline">
                     {activeCase.headline}
                   </span>
-                  <span className={`ml-auto font-mono-data text-[11px] px-2 py-0.5 rounded-sm ${
-                    activeCase.status === "MONITORING"
-                      ? "bg-accent/20 text-accent"
-                      : "bg-muted text-muted-foreground"
-                  }`}>
-                    {activeCase.status}
+                  <span className="ml-auto hidden font-mono text-[11px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm bg-muted text-muted-foreground sm:inline">
+                    Demo
                   </span>
                 </div>
 
                 {/* Sparkline grid */}
                 <div className="px-5 pt-5 pb-3">
-                  <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-                    Sensor Array — Live Monitoring
+                  <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                    Sensor array · simulated signals
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                     {activeCase.sensors.map((sensor) => (
@@ -746,7 +718,7 @@ const PlatformSection = () => {
                 <div className="grid md:grid-cols-2 border-t border-border/50">
                   {/* Signature hero chart */}
                   <div className="p-5 border-r border-border/50">
-                    <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
                       {heroChartLabels[activeCase.heroChart]}
                     </div>
                     <div className="h-44">
@@ -757,10 +729,10 @@ const PlatformSection = () => {
                   {/* Timeline chart */}
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                        {activeCase.timelineLabel} — 30 Day Trend
+                      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                        {activeCase.timelineLabel} · 30 days
                       </span>
-                      <span className="font-mono-data text-[11px] text-muted-foreground/50">
+                      <span className="font-mono text-[11px] text-muted-foreground">
                         ─── Threshold
                       </span>
                     </div>
@@ -773,9 +745,9 @@ const PlatformSection = () => {
                               <stop offset="100%" stopColor={activeCase.color} stopOpacity={0.02} />
                             </linearGradient>
                           </defs>
-                          <XAxis dataKey="day" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} interval={4} />
-                          <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, 100]} width={28} />
-                          <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "2px", fontSize: "10px", fontFamily: "monospace" }} />
+                          <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} interval={4} />
+                          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[0, 100]} width={28} />
+                          <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "2px", fontSize: "12px", fontFamily: "monospace" }} />
                           <Line type="monotone" dataKey="threshold" stroke="hsl(var(--destructive))" strokeWidth={1} strokeDasharray="4 4" dot={false} strokeOpacity={0.4} />
                           <Area type="monotone" dataKey="risk" stroke={activeCase.color} strokeWidth={1.5} fill={`url(#grad-${activeCase.id})`} />
                         </AreaChart>
@@ -788,34 +760,32 @@ const PlatformSection = () => {
                 <div className="grid md:grid-cols-3 border-t border-border/50">
                   {/* Stats */}
                   <div className="p-5 border-r border-border/50">
-                    <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-                      Key Outcomes
+                    <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                      What this view tracks
                     </div>
-                    <div className="space-y-3">
-                      {activeCase.stats.map((stat) => (
-                        <div key={stat.label}>
-                          <div className="font-heading text-lg text-foreground">{stat.value}</div>
-                          <div className="font-mono-data text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                            {stat.label}
-                          </div>
-                        </div>
+                    <ul className="space-y-2.5">
+                      {activeCase.watch.map((item) => (
+                        <li key={item} className="flex gap-2.5 text-sm leading-snug text-foreground">
+                          <span className="mt-2 h-px w-3 flex-shrink-0" style={{ backgroundColor: activeCase.color }} aria-hidden="true" />
+                          {item}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
 
                   {/* Risk */}
                   <div className="p-5 border-r border-border/50">
-                    <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-                      Risk Assessment
+                    <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                      Example risk index
                     </div>
                     <RiskBar before={activeCase.riskBefore} after={activeCase.riskAfter} color={activeCase.color} />
                     <div className="mt-4">
-                      <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                      <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
                         Disciplines
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {activeCase.disciplines.map((d) => (
-                          <span key={d} className="font-mono-data text-[10px] px-1.5 py-0.5 border border-border text-muted-foreground">
+                          <span key={d} className="font-mono text-[11px] px-1.5 py-0.5 border border-border text-muted-foreground">
                             {d}
                           </span>
                         ))}
@@ -826,20 +796,19 @@ const PlatformSection = () => {
                   {/* Footer */}
                   <div className="p-5 flex flex-col justify-between">
                     <div>
-                      <div className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-                        Case ID
+                      <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                        Scenario
                       </div>
-                      <div className="font-heading text-3xl text-foreground/15">
+                      <div className="font-heading text-3xl text-muted-foreground">
                         {String(activeIndex + 1).padStart(2, "0")}
-                        <span className="font-mono-data text-[11px] text-muted-foreground ml-1">/07</span>
+                        <span className="font-mono text-[11px] text-muted-foreground ml-1">/{String(workspaces.length).padStart(2, "0")}</span>
                       </div>
                     </div>
                     <Link
-                      to="/case-studies"
-                      className="inline-flex items-center gap-1.5 font-mono-data text-[10px] uppercase tracking-[0.15em] hover:text-accent transition-colors group mt-4"
-                      style={{ color: activeCase.color }}
+                      to={`/scenarios#${activeCase.id}`}
+                      className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-accent hover:text-foreground transition-colors group mt-4"
                     >
-                      Full Report
+                      Read the scenario
                       <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>

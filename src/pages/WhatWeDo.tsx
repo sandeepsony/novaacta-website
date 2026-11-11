@@ -1,522 +1,298 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
 import {
-  Search,
-  Cpu,
-  ShieldCheck,
-  FileText,
-  Database,
-  GitBranch,
-  BarChart3,
-  TrendingUp,
-  Brain,
-  FileSearch,
-  Eye,
-  Boxes,
-  Sparkles,
   ArrowRight,
+  BarChart3,
+  Boxes,
+  Brain,
+  Cpu,
+  Database,
+  Eye,
+  FileSearch,
+  FileText,
+  GitBranch,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import CTASection from "@/components/CTASection";
+import Reveal from "@/components/Reveal";
 
-/* ── capability data ── */
-const engineeringCapabilities = [
+interface Capability {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  details: string[];
+}
+
+const engineering: Capability[] = [
   {
     icon: Search,
-    title: "Failure & Root Cause Analysis",
+    title: "Failure and root cause analysis",
     description:
-      "Forensic investigation of structural, mechanical, and process failures using first-principles physics and metallurgical evidence.",
-    details: [
-      "Fracture mechanics & fatigue analysis",
-      "Metallurgical failure mode identification",
-      "Cascade failure pathway mapping",
-    ],
+      "Forensic investigation of structural, mechanical and process failures using first-principles physics and metallurgical evidence.",
+    details: ["Fracture mechanics and fatigue analysis", "Failure mode identification", "Cascade failure pathway mapping"],
   },
   {
     icon: Cpu,
-    title: "First-Principles Simulation",
+    title: "First-principles simulation",
     description:
-      "Physics-based modeling including FEA, CFD, and thermodynamic analysis to replicate real-world conditions with precision.",
-    details: [
-      "Finite element & computational fluid dynamics",
-      "Thermal-mechanical coupling models",
-      "Multi-physics scenario simulation",
-    ],
+      "Physics-based modeling, including FEA, CFD and thermodynamic analysis, calibrated against how the asset actually behaves.",
+    details: ["Finite element and computational fluid dynamics", "Thermal-mechanical coupling", "Multi-physics scenario simulation"],
   },
   {
     icon: ShieldCheck,
-    title: "Asset Integrity Management",
+    title: "Asset integrity management",
     description:
-      "Lifecycle assessment, corrosion modeling, and predictive maintenance strategies that extend asset life and reduce unplanned downtime.",
-    details: [
-      "Remaining useful life estimation",
-      "Corrosion rate modeling & mitigation",
-      "Risk-based inspection planning",
-    ],
+      "Lifecycle assessment, corrosion modeling and maintenance strategy aimed at longer asset life and less unplanned downtime.",
+    details: ["Remaining useful life estimation", "Corrosion rate modeling and mitigation", "Risk-based inspection planning"],
   },
   {
     icon: FileText,
-    title: "Regulatory & Compliance Engineering",
+    title: "Regulatory and compliance engineering",
     description:
-      "Code compliance analysis, safety case development, and expert testimony grounded in engineering evidence.",
-    details: [
-      "ASME, API, ASCE code compliance",
-      "Safety case & risk assessment",
-      "Litigation support & expert testimony",
-    ],
+      "Code compliance analysis and safety case development, with conclusions grounded in engineering evidence.",
+    details: ["ASME, API and ASCE code compliance", "Safety case and risk assessment", "Independent technical review"],
   },
   {
     icon: TrendingUp,
-    title: "Process Optimization",
+    title: "Process optimization",
     description:
-      "Systematic improvement of industrial processes through energy audits, heat integration studies, and efficiency benchmarking.",
-    details: [
-      "Pinch analysis & heat integration",
-      "Energy audit & loss identification",
-      "Throughput & yield optimization",
-    ],
+      "Systematic improvement of industrial processes through energy audits, heat integration studies and efficiency benchmarking.",
+    details: ["Pinch analysis and heat integration", "Energy audit and loss identification", "Throughput and yield optimization"],
   },
 ];
 
-const dataCapabilities = [
+const data: Capability[] = [
   {
     icon: Database,
-    title: "Industrial Data Curation",
+    title: "Industrial data curation",
     description:
-      "Cleaning, harmonizing, and structuring sensor, SCADA, and historian data from disparate systems into analysis-ready datasets.",
-    details: [
-      "Multi-source data harmonization",
-      "Sensor drift correction & validation",
-      "Data quality scoring & lineage tracking",
-    ],
+      "Cleaning, harmonizing and structuring sensor, SCADA and historian data from separate systems into datasets ready for analysis.",
+    details: ["Multi-source harmonization", "Sensor drift correction and validation", "Quality scoring and lineage tracking"],
   },
   {
     icon: GitBranch,
-    title: "Data Pipeline Architecture",
+    title: "Data pipeline architecture",
     description:
-      "Real-time ingestion, transformation, and warehousing pipelines designed for operational data at industrial scale.",
-    details: [
-      "Streaming & batch ingestion frameworks",
-      "ETL/ELT pipeline design",
-      "Time-series data warehousing",
-    ],
+      "Ingestion, transformation and warehousing pipelines designed for operational data at industrial scale.",
+    details: ["Streaming and batch ingestion", "ETL and ELT pipeline design", "Time-series data warehousing"],
   },
   {
     icon: BarChart3,
-    title: "Operational Analytics & Dashboards",
+    title: "Operational analytics and dashboards",
     description:
-      "KPI monitoring, anomaly detection, and performance benchmarking dashboards tailored to engineering decision-makers.",
-    details: [
-      "Real-time KPI dashboards",
-      "Statistical anomaly detection",
-      "Cross-asset performance benchmarking",
-    ],
+      "KPI monitoring, anomaly detection and benchmarking dashboards built for the engineers who make the decisions.",
+    details: ["Real-time KPI dashboards", "Statistical anomaly detection", "Cross-asset benchmarking"],
   },
   {
     icon: TrendingUp,
-    title: "Predictive Analytics",
+    title: "Predictive analytics",
     description:
-      "Statistical modeling and trend forecasting for asset health, process degradation, and operational risk.",
-    details: [
-      "Time-series forecasting models",
-      "Degradation trend analysis",
-      "Risk probability scoring",
-    ],
+      "Statistical modeling and forecasting for asset health, process degradation and operational risk.",
+    details: ["Time-series forecasting", "Degradation trend analysis", "Risk probability scoring"],
   },
 ];
 
-const aiScenarios = [
+const appliedAi = [
   {
     icon: Brain,
-    title: "AI-Augmented Failure Prediction",
+    title: "Failure prediction",
+    benefit: "Earlier warning than threshold alarms",
     description:
-      "Machine learning models trained on historical failure data flag at-risk assets before incidents occur.",
-    impact: "40%",
-    impactLabel: "reduction in unplanned downtime",
+      "Models trained on failure history flag at-risk assets before an incident, with the physics used to check each prediction.",
   },
   {
     icon: FileSearch,
-    title: "Natural Language Report Mining",
+    title: "Report mining",
+    benefit: "Years of free text, searchable",
     description:
-      "AI parses thousands of inspection reports, maintenance logs, and incident records to surface hidden patterns.",
-    impact: "10×",
-    impactLabel: "faster pattern discovery",
+      "Language models read inspection reports, maintenance logs and incident records at a scale no team can, and surface recurring patterns.",
   },
   {
     icon: Eye,
-    title: "Computer Vision for Inspection",
+    title: "Computer vision for inspection",
+    benefit: "Consistent first-pass screening",
     description:
-      "Automated defect detection from drone imagery, radiographic scans, and ultrasonic data.",
-    impact: "95%+",
-    impactLabel: "defect detection accuracy",
+      "Defect detection from drone imagery, radiographs and ultrasonic scans, with a qualified inspector reviewing what the model flags.",
   },
   {
     icon: Boxes,
-    title: "Digital Twin Simulation",
+    title: "Digital twin simulation",
+    benefit: "More scenarios per study",
     description:
-      "AI-driven digital twins simulate 'what-if' scenarios for infrastructure under stress.",
-    impact: "1000s",
-    impactLabel: "of scenarios in hours",
+      "Surrogate models let a digital twin run what-if cases for an asset under stress in a fraction of the time of a full simulation.",
   },
   {
     icon: Sparkles,
-    title: "Intelligent Data Preparation",
+    title: "Data preparation",
+    benefit: "Less manual cleaning",
     description:
-      "Automated data quality scoring, missing-value imputation, and sensor drift correction.",
-    impact: "80%",
-    impactLabel: "less manual data prep",
+      "Automated quality scoring, gap filling and sensor drift correction, so engineers spend their time on the analysis.",
   },
 ];
 
-/* ── animation helpers ── */
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const } },
-};
+const sections = [
+  { id: "engineering", number: "01", label: "Engineering" },
+  { id: "data", number: "02", label: "Data" },
+  { id: "applied-ai", number: "03", label: "Applied AI" },
+];
 
-/* ── page ── */
-const WhatWeDo = () => {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
-
-  const dataScrollRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <Navbar />
-
-      {/* ─── Hero — Bold Split Layout ─── */}
-      <motion.section
-        ref={heroRef}
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative pt-32 pb-20 md:pt-44 md:pb-28 overflow-hidden"
-      >
-        {/* Ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
-
-        <div className="cinematic-container relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left — Big keyword */}
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <div className="label-mono mb-6">What We Do</div>
-              <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl font-medium text-foreground leading-[0.95] tracking-tight">
-                Engineer.
-                <br />
-                <span className="italic text-accent">Analyze.</span>
-                <br />
-                Transform.
-              </h1>
-            </motion.div>
-
-            {/* Right — Description + stats */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="lg:pt-8"
-            >
-              <p className="font-body text-base md:text-lg text-muted-foreground leading-relaxed mb-10 max-w-md">
-                We combine deep engineering domain expertise with modern data
-                engineering, analytics, and AI to solve problems that neither
-                discipline can tackle alone.
-              </p>
-
-              {/* Mini stat row */}
-              <div className="flex gap-10">
-                {[
-                  { value: "3", label: "Disciplines" },
-                  { value: "9+", label: "Capabilities" },
-                  { value: "5", label: "AI Scenarios" },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div className="font-heading text-3xl md:text-4xl text-accent font-medium">
-                      {s.value}
-                    </div>
-                    <div className="font-mono-data text-[9px] uppercase tracking-[0.15em] text-muted-foreground mt-1">
-                      {s.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* ─── Engineering Capabilities — Interactive Grid ─── */}
-      <section className="py-20 md:py-28 relative">
-        {/* Section accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-        <div className="cinematic-container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeUp}
-            className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6"
-          >
-            <div>
-              <div className="label-mono mb-4 text-accent">01 / Engineering</div>
-              <h2 className="font-heading text-4xl md:text-5xl text-foreground leading-[1.05]">
-                Deep-Domain
-                <br />
-                <span className="italic">Expertise</span>
-              </h2>
-            </div>
-            <p className="font-body text-sm text-muted-foreground max-w-sm leading-relaxed">
-              From forensic failure analysis to regulatory compliance — rigorous,
-              first-principles engineering across critical infrastructure.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {engineeringCapabilities.map((cap, i) => (
-              <motion.div
-                key={cap.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: i * 0.08 }}
-                className="group relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-sm p-7 
-                  hover:bg-card hover:border-accent/30 hover:shadow-[0_0_40px_-12px_hsl(var(--accent)/0.15)]
-                  transition-all duration-500 cursor-default"
-              >
-                {/* Top accent bar on hover */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-sm bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-500">
-                    <cap.icon className="w-4.5 h-4.5 text-accent" />
-                  </div>
-                  <span className="font-mono-data text-[9px] text-muted-foreground/60 uppercase tracking-[0.2em]">
-                    0{i + 1}
-                  </span>
-                </div>
-
-                <h3 className="font-heading text-xl text-foreground mb-3 group-hover:text-accent transition-colors duration-300">
-                  {cap.title}
-                </h3>
-                <p className="font-body text-xs text-muted-foreground leading-relaxed mb-5">
-                  {cap.description}
-                </p>
-
-                <ul className="space-y-2.5">
-                  {cap.details.map((d) => (
-                    <li
-                      key={d}
-                      className="font-mono-data text-[9px] uppercase tracking-[0.1em] text-muted-foreground/70 flex items-center gap-2.5
-                        group-hover:text-muted-foreground transition-colors duration-300"
-                    >
-                      <ArrowRight className="w-2.5 h-2.5 text-accent/50 group-hover:text-accent transition-colors duration-300" />
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Data Engineering — Horizontal Scroll Strip ─── */}
-      <section className="py-20 md:py-28 relative bg-card/30">
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-        <div className="cinematic-container mb-12">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeUp}
-            className="flex flex-col md:flex-row md:items-end md:justify-between gap-6"
-          >
-            <div>
-              <div className="label-mono mb-4 text-accent">02 / Data Intelligence</div>
-              <h2 className="font-heading text-4xl md:text-5xl text-foreground leading-[1.05]">
-                Industrial Data,
-                <br />
-                <span className="italic">Made Actionable</span>
-              </h2>
-            </div>
-            <p className="font-body text-sm text-muted-foreground max-w-sm leading-relaxed">
-              From raw sensor feeds to executive dashboards — we build the data
-              infrastructure that turns operational noise into insight.
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Horizontal scroll strip */}
-        <div className="relative">
-          <div
-            ref={dataScrollRef}
-            className="flex gap-5 overflow-x-auto pb-6 px-6 md:px-12 lg:px-16 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
-          >
-            {dataCapabilities.map((cap, i) => (
-              <motion.div
-                key={cap.title}
-                initial={{ opacity: 0, x: 40 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                className="group relative min-w-[75vw] sm:min-w-[50vw] md:min-w-[420px] lg:min-w-[400px] bg-background border border-border/50 rounded-sm p-8 snap-start
-                  hover:border-accent/30 hover:shadow-[0_0_40px_-12px_hsl(var(--accent)/0.15)]
-                  transition-all duration-500 flex-shrink-0"
-              >
-                {/* Number watermark */}
-                <div className="absolute top-6 right-6 font-heading text-6xl font-medium text-muted/50 select-none leading-none">
-                  {String(i + 1).padStart(2, "0")}
-                </div>
-
-                <div className="relative z-10">
-                  <div className="w-10 h-10 rounded-sm bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-500 mb-6">
-                    <cap.icon className="w-4.5 h-4.5 text-accent" />
-                  </div>
-
-                  <h3 className="font-heading text-xl text-foreground mb-3 group-hover:text-accent transition-colors duration-300">
-                    {cap.title}
-                  </h3>
-                  <p className="font-body text-xs text-muted-foreground leading-relaxed mb-6">
-                    {cap.description}
-                  </p>
-
-                  <ul className="space-y-2.5">
-                    {cap.details.map((d) => (
-                      <li
-                        key={d}
-                        className="font-mono-data text-[9px] uppercase tracking-[0.1em] text-muted-foreground/70 flex items-center gap-2.5"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent/40 shrink-0" />
-                        {d}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Scroll fade edges */}
-          <div className="absolute top-0 left-0 bottom-6 w-12 bg-gradient-to-r from-card/30 to-transparent pointer-events-none" />
-          <div className="absolute top-0 right-0 bottom-6 w-12 bg-gradient-to-l from-card/30 to-transparent pointer-events-none" />
-        </div>
-      </section>
-
-      {/* ─── AI Scenarios — Dark Showcase ─── */}
-      <section className="py-20 md:py-28 relative bg-background">
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-        {/* Ambient background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/3 blur-[150px] pointer-events-none" />
-
-        <div className="cinematic-container relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeUp}
-            className="text-center mb-16"
-          >
-            <div className="label-mono mb-4 text-accent">03 / AI-Powered Engineering</div>
-            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl text-foreground max-w-3xl mx-auto leading-[1.05]">
-              AI That Understands{" "}
-              <span className="italic text-accent">Physics</span>
-            </h2>
-            <p className="font-body text-sm text-muted-foreground mt-5 max-w-lg mx-auto leading-relaxed">
-              Practical AI applications grounded in engineering reality — not
-              hype. Each scenario is deployed with domain-specific validation.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-            {aiScenarios.map((scenario, i) => (
-              <motion.div
-                key={scenario.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: i * 0.08 }}
-                className={`group relative border border-border/50 rounded-sm overflow-hidden
-                  hover:border-accent/40 transition-all duration-500 cursor-default
-                  ${i === 0 ? "md:col-span-2 lg:col-span-2" : ""}
-                  bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm`}
-              >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/[0.03] transition-colors duration-500" />
-
-                <div className="relative z-10 p-8 md:p-9">
-                  {/* Impact metric — big and bold */}
-                  <div className="mb-6">
-                    <span className="font-heading text-4xl md:text-5xl font-medium text-accent leading-none">
-                      {scenario.impact}
-                    </span>
-                    <span className="block font-mono-data text-[9px] uppercase tracking-[0.15em] text-muted-foreground mt-2">
-                      {scenario.impactLabel}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 mb-4">
-                    <scenario.icon className="w-4 h-4 text-accent/70" />
-                    <h3 className="font-heading text-lg text-foreground group-hover:text-accent transition-colors duration-300">
-                      {scenario.title}
-                    </h3>
-                  </div>
-
-                  <p className="font-body text-xs text-muted-foreground leading-relaxed">
-                    {scenario.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Bottom CTA ─── */}
-      <section className="py-24 md:py-32 relative">
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-        <div className="cinematic-container text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="label-mono mb-6 text-accent">Let's Talk</div>
-            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl text-foreground max-w-2xl mx-auto mb-6 leading-[1.05]">
-              Ready to see
-              <br />
-              <span className="italic">what's possible?</span>
-            </h2>
-            <p className="font-body text-sm text-muted-foreground max-w-md mx-auto mb-12">
-              Whether you need forensic expertise, a modern data platform, or
-              AI-driven insights — we bring it all together.
-            </p>
-            <a
-              href="mailto:hello@novaacta.com"
-              className="group inline-flex items-center gap-3 bg-accent text-accent-foreground font-mono-data text-[10px] uppercase tracking-[0.2em] px-10 py-4 rounded-sm hover:gap-5 transition-all duration-300"
-            >
-              Start a Conversation
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </motion.div>
-        </div>
-      </section>
-
-      <Footer />
+const CapabilityCard = ({ capability, index }: { capability: Capability; index: number }) => (
+  <Reveal as="li" delay={(index % 3) * 70} className="group relative flex flex-col bg-background p-7 transition-colors duration-300 hover:bg-card md:p-8">
+    <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" aria-hidden="true" />
+    <div className="flex h-11 w-11 items-center justify-center bg-accent/10">
+      <capability.icon className="h-5 w-5 text-accent" strokeWidth={1.5} aria-hidden="true" />
     </div>
-  );
-};
+    <h3 className="mt-6 text-2xl leading-tight text-foreground">{capability.title}</h3>
+    <p className="mt-3 leading-relaxed text-muted-foreground">{capability.description}</p>
+    <ul className="mt-6 space-y-2.5 border-t border-border pt-5">
+      {capability.details.map((detail) => (
+        <li key={detail} className="flex gap-3 text-sm leading-snug text-muted-foreground">
+          <span className="mt-2 h-px w-3 flex-shrink-0 bg-accent" aria-hidden="true" />
+          {detail}
+        </li>
+      ))}
+    </ul>
+  </Reveal>
+);
+
+const SectionIntro = ({ id, number, label, title, intro }: { id: string; number: string; label: string; title: ReactNode; intro: string }) => (
+  <Reveal className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p className="eyebrow text-accent">
+        {number} / {label}
+      </p>
+      <h2 id={`${id}-heading`} className="mt-5 text-4xl leading-[1.08] text-foreground md:text-5xl">
+        {title}
+      </h2>
+    </div>
+    <p className="max-w-md text-lg leading-relaxed text-muted-foreground">{intro}</p>
+  </Reveal>
+);
+
+const WhatWeDo = () => (
+  <>
+    <section className="relative overflow-hidden pb-16 pt-36 md:pb-24 md:pt-44">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-[120px]" aria-hidden="true" />
+      <div className="site-container relative grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+        <div>
+          <p className="eyebrow mb-6">What we do</p>
+          <h1 className="text-6xl leading-[0.98] text-foreground md:text-7xl lg:text-8xl">
+            Engineer.
+            <br />
+            <span className="italic text-accent">Analyze.</span>
+            <br />
+            Transform.
+          </h1>
+        </div>
+        <div className="rise">
+          <p className="max-w-md text-xl leading-relaxed text-muted-foreground">
+            We combine engineering domain expertise with modern data engineering, analytics and AI
+            to solve problems that neither discipline can solve alone.
+          </p>
+          <ul className="mt-10 flex flex-wrap gap-x-10 gap-y-4">
+            {sections.map((section) => (
+              <li key={section.id}>
+                <a href={`#${section.id}`} className="group block">
+                  <span className="font-heading text-4xl leading-none text-accent">{section.number}</span>
+                  <span className="meta mt-2 block transition-colors group-hover:text-foreground">{section.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="engineering" className="section scroll-mt-16" aria-labelledby="engineering-heading">
+      <div className="site-container">
+        <SectionIntro
+          id="engineering"
+          number="01"
+          label="Engineering"
+          title={
+            <>
+              Deep-domain <span className="italic text-accent">expertise</span>
+            </>
+          }
+          intro="From forensic failure analysis to code compliance: rigorous, first-principles engineering for critical infrastructure."
+        />
+        <ul className="grid gap-px border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
+          {engineering.map((capability, index) => (
+            <CapabilityCard key={capability.title} capability={capability} index={index} />
+          ))}
+          <li className="hidden bg-background lg:block" aria-hidden="true" />
+        </ul>
+      </div>
+    </section>
+
+    <section id="data" className="section scroll-mt-16 bg-card/40" aria-labelledby="data-heading">
+      <div className="site-container">
+        <SectionIntro
+          id="data"
+          number="02"
+          label="Data"
+          title={
+            <>
+              Industrial data, <span className="italic text-accent">made usable</span>
+            </>
+          }
+          intro="From raw sensor feeds to the dashboard a decision is made on: the data infrastructure that turns operational noise into evidence."
+        />
+        <ul className="grid gap-px border border-border bg-border md:grid-cols-2">
+          {data.map((capability, index) => (
+            <CapabilityCard key={capability.title} capability={capability} index={index} />
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section id="applied-ai" className="section scroll-mt-16" aria-labelledby="applied-ai-heading">
+      <div className="site-container">
+        <SectionIntro
+          id="applied-ai"
+          number="03"
+          label="Applied AI"
+          title={
+            <>
+              AI that answers to <span className="italic text-accent">the physics</span>
+            </>
+          }
+          intro="Practical applications, not hype. Every model is validated against the engineering before anyone relies on it."
+        />
+        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {appliedAi.map((item, index) => (
+            <Reveal
+              as="li"
+              key={item.title}
+              delay={(index % 3) * 70}
+              className={`border border-border bg-card/50 p-7 transition-colors duration-300 hover:border-accent/50 md:p-8 ${index === 0 ? "md:col-span-2 lg:col-span-2" : ""}`}
+            >
+              <item.icon className="h-6 w-6 text-accent" strokeWidth={1.5} aria-hidden="true" />
+              <h3 className="mt-6 text-2xl leading-tight text-foreground">{item.title}</h3>
+              <p className="mt-2 font-heading text-xl italic text-accent">{item.benefit}</p>
+              <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">{item.description}</p>
+            </Reveal>
+          ))}
+        </ul>
+
+        <Reveal className="mt-12">
+          <Link to="/scenarios" className="group inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.16em] text-accent">
+            See how we would apply this to a specific problem
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+          </Link>
+        </Reveal>
+      </div>
+    </section>
+
+    <CTASection
+      title="Not sure which of these you need?"
+      body="Most problems cross all three. Describe what you are seeing and we will tell you where we would start."
+    />
+  </>
+);
 
 export default WhatWeDo;

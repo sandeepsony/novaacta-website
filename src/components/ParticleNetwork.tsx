@@ -6,106 +6,137 @@ interface Node {
   vx: number;
   vy: number;
   radius: number;
-  connected: number[];
 }
 
+const MAX_DISTANCE = 170;
+const COLOR = "38, 80%, 55%";
+
+/**
+ * Decorative drifting network behind the hero.
+ *
+ * It only animates while the hero is on screen and the tab is visible, draws
+ * a single still frame for visitors who prefer reduced motion, and uses fewer
+ * nodes on small screens.
+ */
 const ParticleNetwork = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context) return;
 
-    let w = 0;
-    let h = 0;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+    let onScreen = true;
     const nodes: Node[] = [];
-    const nodeCount = 60;
-    const maxDist = 180;
 
     const resize = () => {
-      w = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      h = canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      width = canvas.offsetWidth;
+      height = canvas.offsetHeight;
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
     };
 
-    const init = () => {
-      resize();
-      const cw = canvas.offsetWidth;
-      const ch = canvas.offsetHeight;
-      for (let i = 0; i < nodeCount; i++) {
+    const seed = () => {
+      const count = width < 640 ? 26 : 54;
+      nodes.length = 0;
+      for (let i = 0; i < count; i++) {
         nodes.push({
-          x: Math.random() * cw,
-          y: Math.random() * ch,
+          x: Math.random() * width,
+          y: Math.random() * height,
           vx: (Math.random() - 0.5) * 0.3,
           vy: (Math.random() - 0.5) * 0.3,
-          radius: Math.random() * 2 + 1,
-          connected: [],
+          radius: Math.random() * 1.6 + 0.8,
         });
       }
     };
 
     const draw = () => {
-      const cw = canvas.offsetWidth;
-      const ch = canvas.offsetHeight;
-      ctx.clearRect(0, 0, cw, ch);
+      context.clearRect(0, 0, width, height);
 
-      // Update positions
       for (const node of nodes) {
         node.x += node.vx;
         node.y += node.vy;
-        if (node.x < 0 || node.x > cw) node.vx *= -1;
-        if (node.y < 0 || node.y > ch) node.vy *= -1;
+        if (node.x < 0 || node.x > width) node.vx *= -1;
+        if (node.y < 0 || node.y > height) node.vy *= -1;
       }
 
-      // Draw connections
+      context.lineWidth = 0.5;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x;
           const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < maxDist) {
-            const alpha = (1 - dist / maxDist) * 0.15;
-            ctx.beginPath();
-            ctx.strokeStyle = `hsla(38, 80%, 55%, ${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
+          const distanceSquared = dx * dx + dy * dy;
+          if (distanceSquared > MAX_DISTANCE * MAX_DISTANCE) continue;
+
+          const alpha = (1 - Math.sqrt(distanceSquared) / MAX_DISTANCE) * 0.18;
+          context.strokeStyle = `hsla(${COLOR}, ${alpha})`;
+          context.beginPath();
+          context.moveTo(nodes[i].x, nodes[i].y);
+          context.lineTo(nodes[j].x, nodes[j].y);
+          context.stroke();
         }
       }
 
-      // Draw nodes
+      context.fillStyle = `hsla(${COLOR}, 0.55)`;
       for (const node of nodes) {
-        ctx.beginPath();
-        ctx.fillStyle = `hsla(38, 80%, 55%, 0.6)`;
-        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fill();
+        context.beginPath();
+        context.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        context.fill();
       }
-
-      animationRef.current = requestAnimationFrame(draw);
     };
 
-    init();
+    const loop = () => {
+      draw();
+      frame = requestAnimationFrame(loop);
+    };
+
+    const start = () => {
+      if (reduceMotion || frame || !onScreen || document.hidden) return;
+      frame = requestAnimationFrame(loop);
+    };
+
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const onResize = () => {
+      resize();
+      if (reduceMotion) draw();
+    };
+
+    const onVisibility = () => (document.hidden ? stop() : start());
+
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      if (onScreen) start();
+      else stop();
+    });
+
+    resize();
+    seed();
     draw();
-    window.addEventListener("resize", resize);
+    start();
+
+    observer.observe(canvas);
+    window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      cancelAnimationFrame(animationRef.current);
-      window.removeEventListener("resize", resize);
+      stop();
+      observer.disconnect();
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.6 }}
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-60" />;
 };
 
 export default ParticleNetwork;

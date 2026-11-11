@@ -1,105 +1,50 @@
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import DataStreamViz from "@/components/DataStreamViz";
+import Reveal from "@/components/Reveal";
+import SectionHeading from "@/components/SectionHeading";
 
 const steps = [
   {
-    number: "01",
-    title: "Data & Domain Audit",
-    description:
-      "We embed PhD-level specialists in your operations to map the data you're generating, assess its quality, and identify the highest-value problems it can solve.",
-    status: "DIAGNOSTIC",
+    title: "Data and domain audit",
+    body: "We map the data your operation generates, assess its quality, and identify which of your open problems it can actually answer.",
   },
   {
-    number: "02",
-    title: "Problem Formulation",
-    description:
-      "Most organizations fail at AI not because of bad data, but poorly framed problems. Our domain experts translate engineering challenges into precise analytical questions.",
-    status: "CALIBRATION",
+    title: "Problem formulation",
+    body: "Analytics projects fail more often from a badly framed question than from bad data. We turn the engineering problem into a precise analytical one.",
   },
   {
-    number: "03",
-    title: "Model & Solution Engineering",
-    description:
-      "We build bespoke analytical solutions — from physics-informed ML to optimization algorithms — designed by people who understand both the math and the machinery.",
-    status: "EXECUTION",
+    title: "Model and solution engineering",
+    body: "We build the analysis the problem calls for, from physics-informed machine learning to optimization, and validate it against the physics.",
   },
   {
-    number: "04",
-    title: "Operationalization & Transfer",
-    description:
-      "Solutions embedded into your workflows with full knowledge transfer. We don't leave black boxes — we leave capabilities your engineers can own and extend.",
-    status: "DEPLOYMENT",
+    title: "Handover",
+    body: "The result is embedded in your workflow with full documentation. No black boxes: your engineers can run it, question it and extend it.",
   },
 ];
 
-const ApproachSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+const ApproachSection = () => (
+  <section className="section bg-card/40" aria-labelledby="approach-heading">
+    <div className="site-container">
+      <SectionHeading
+        eyebrow="How we work"
+        id="approach-heading"
+        title={
+          <>
+            From raw data to a decision <span className="italic text-accent">you can defend.</span>
+          </>
+        }
+        intro="Four stages, from working out what your data can answer to handing over a result your team can run."
+      />
 
-  return (
-    <section id="methodology" className="py-24 md:py-32">
-      <div className="editorial-container">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-20" ref={ref}>
-          {/* Left column */}
-          <div className="lg:col-span-4">
-            <p className="label-uppercase mb-3">Methodology</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-medium text-foreground mb-5">
-              From Raw Data to Real Decisions
-            </h2>
-            <p className="font-body text-base text-muted-foreground leading-relaxed mb-8">
-              Our methodology is built for engineering organizations that have invested
-              in data infrastructure but haven't realized the return.
-            </p>
-
-            {/* Data stream visualization */}
-            <div className="h-48 border border-border relative overflow-hidden hidden lg:block">
-              <DataStreamViz />
-              <div className="absolute top-2 left-3 font-mono text-[8px] text-muted-foreground/40">
-                LIVE DATA STREAM // ENCRYPTED
-              </div>
-            </div>
-          </div>
-
-          {/* Right column - steps */}
-          <div className="lg:col-span-8">
-            <div className="space-y-0">
-              {steps.map((step, i) => (
-                <motion.div
-                  key={step.number}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.5, delay: i * 0.12 }}
-                  className="group border-b border-border py-10 first:pt-0 last:border-b-0"
-                >
-                  <div className="flex gap-6 md:gap-10">
-                    <div className="shrink-0">
-                      <span className="font-mono text-3xl md:text-4xl font-light text-border group-hover:text-primary transition-colors duration-500">
-                        {step.number}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-heading text-xl font-medium text-foreground">
-                          {step.title}
-                        </h3>
-                        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 border border-border px-2 py-0.5 hidden sm:inline">
-                          {step.status}
-                        </span>
-                      </div>
-                      <p className="font-body text-sm text-muted-foreground leading-relaxed max-w-lg">
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
+      <ol className="mt-14 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+        {steps.map((step, index) => (
+          <Reveal as="li" key={step.title} delay={index * 80} className="border-t border-accent/50 pt-6">
+            <span className="font-mono text-xs uppercase tracking-[0.18em] text-accent">Stage {index + 1}</span>
+            <h3 className="mt-4 text-2xl leading-tight text-foreground">{step.title}</h3>
+            <p className="mt-3 leading-relaxed text-muted-foreground">{step.body}</p>
+          </Reveal>
+        ))}
+      </ol>
+    </div>
+  </section>
+);
 
 export default ApproachSection;

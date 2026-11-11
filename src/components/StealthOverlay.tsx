@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, AlertCircle, KeyRound } from "lucide-react";
 import Wordmark from "@/components/Wordmark";
-import logoGold from "@/assets/logo-compass-gold.png";
+import Logo from "@/components/Logo";
 
 const BLOCKED_DOMAINS = [
   "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.in", "yahoo.co.uk",
@@ -82,7 +82,7 @@ const StealthOverlay = () => {
             <div className="p-8 md:p-10">
               {/* Logo */}
               <div className="flex justify-center mb-4">
-                <img src={logoGold} alt="" className="w-12 h-12 object-contain" />
+                <Logo className="w-12 h-12" />
               </div>
 
               {/* Wordmark */}
@@ -93,7 +93,7 @@ const StealthOverlay = () => {
               {/* Stealth badge */}
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Lock className="w-3 h-3 text-accent" />
-                <span className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-accent">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
                   Stealth Mode
                 </span>
               </div>
@@ -103,7 +103,7 @@ const StealthOverlay = () => {
                 credentials and access code to continue.
               </p>
 
-              <div className="divider-line mx-auto mb-5" />
+              <div className="rule mx-auto mb-5" />
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-3">
@@ -146,19 +146,19 @@ const StealthOverlay = () => {
                 {error && (
                   <div className="flex items-start gap-2 text-destructive">
                     <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                    <span className="font-mono-data text-[10px] leading-relaxed">{error}</span>
+                    <span className="font-mono text-[10px] leading-relaxed">{error}</span>
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full border border-accent/40 py-3 font-mono-data text-[10px] uppercase tracking-[0.2em] text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300"
+                  className="w-full border border-accent/40 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                 >
                   Request Access
                 </button>
               </form>
 
-              <p className="mt-4 font-mono-data text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 text-center">
+              <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 text-center">
                 Access code required · All content is under NDA
               </p>
             </div>

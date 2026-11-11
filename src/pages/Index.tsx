@@ -1,31 +1,24 @@
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
+import { MotionConfig } from "framer-motion";
 import AboutSection from "@/components/AboutSection";
-
-import HorizontalServices from "@/components/HorizontalServices";
-import ComparisonStats from "@/components/ComparisonStats";
-import TestimonialCarousel from "@/components/TestimonialCarousel";
-import TeamSection from "@/components/TeamSection";
+import ApproachSection from "@/components/ApproachSection";
+import CapabilitiesSection from "@/components/CapabilitiesSection";
 import CTASection from "@/components/CTASection";
-import Footer from "@/components/Footer";
+import HeroSection from "@/components/HeroSection";
+import ScenariosTeaser from "@/components/ScenariosTeaser";
 import StealthOverlay from "@/components/StealthOverlay";
 
-const Index = () => {
-  return (
-    <div className="min-h-screen bg-background">
+const Index = () => (
+  <>
+    <MotionConfig reducedMotion="user">
       <StealthOverlay />
-      <Navbar />
-      <HeroSection />
-      <AboutSection />
-      
-      <HorizontalServices />
-      <ComparisonStats />
-      <TestimonialCarousel />
-      <TeamSection />
-      <CTASection />
-      <Footer />
-    </div>
-  );
-};
+    </MotionConfig>
+    <HeroSection />
+    <AboutSection />
+    <CapabilitiesSection />
+    <ApproachSection />
+    <ScenariosTeaser />
+    <CTASection />
+  </>
+);
 
 export default Index;

@@ -3,21 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NovaActa — Engineering Intelligence</title>
-    <meta name="description" content="NovaActa embeds PhD domain experts into your engineering data — revealing failures before they happen and decisions your teams couldn't make alone." />
-    <meta name="author" content="NovaActa" />
+    <!-- Sets the theme class before first paint: saved choice, else the system setting. -->
+    <script>
+      (function () {
+        var theme = "dark";
+        try {
+          var saved = localStorage.getItem("theme");
+          if (saved === "light" || saved === "dark") theme = saved;
+          else if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "light";
+        } catch (error) {}
+        document.documentElement.classList.add(theme);
+      })();
+    </script>
+    <title>NovaActa | Engineering intelligence for industrial data</title>
+    <meta name="description" content="NovaActa pairs research-level engineering expertise with data science to find the root cause of failures, losses and risks hiding in industrial data." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://novaacta.com/" />
+    <meta name="theme-color" content="#0b0a09" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <meta property="og:title" content="NovaActa — Engineering Intelligence" />
-    <meta property="og:description" content="PhD experts embedded in your engineering data. We find what others miss." />
+    <meta property="og:site_name" content="NovaActa" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:title" content="NovaActa | Engineering intelligence for industrial data" />
+    <meta property="og:description" content="NovaActa pairs research-level engineering expertise with data science to find the root cause of failures, losses and risks hiding in industrial data." />
+    <meta property="og:url" content="https://novaacta.com/" />
+    <meta property="og:image" content="https://novaacta.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="NovaActa: engineering intelligence for industrial data" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="NovaActa | Engineering intelligence for industrial data" />
+    <meta name="twitter:description" content="NovaActa pairs research-level engineering expertise with data science to find the root cause of failures, losses and risks hiding in industrial data." />
+    <meta name="twitter:image" content="https://novaacta.com/og-image.png" />
+    <!--head-extra-->
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root"><!--app-html--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
